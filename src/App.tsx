@@ -2,16 +2,17 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import NewNote from "./NewNote";
 import useLocalStorage from "./useLocalStorage";
+import NoteList from "./NoteList";
 
 export type Note = {
   id: string;
 } & NoteData;
 
-type RawNote = {
+export type RawNote = {
   id: string;
 } & RawNoteData;
 
-type RawNoteData = {
+export type RawNoteData = {
   title: string;
   markdown: string;
   tagIds: string[];
@@ -33,11 +34,10 @@ const App = () => {
   const [tags, setTags] = useLocalStorage<Tag[]>("TAGS", []);
 
   const onCreateNote = ({ tags, ...data }: NoteData) => {
-    const newNotes = [
+    setNotes((notes) => [
       ...notes,
       { ...data, id: crypto.randomUUID(), tagIds: tags.map((tag) => tag.id) },
-    ];
-    setNotes(newNotes);
+    ]);
   };
 
   const onAddTag = (tag: Tag) => {
@@ -46,7 +46,7 @@ const App = () => {
 
   return (
     <Routes>
-      <Route path="/" element={<h1>Home</h1>} />
+      <Route path="/" element={<NoteList notes={notes} tags={tags} />} />
       <Route
         path="/new"
         element={
