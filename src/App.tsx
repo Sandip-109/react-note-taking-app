@@ -1,35 +1,67 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Navigate, Route, Routes } from "react-router-dom";
+import "bootstrap/dist/css/bootstrap.min.css";
+import NewNote from "./NewNote";
+import useLocalStorage from "./useLocalStorage";
 
-function App() {
-  const [count, setCount] = useState(0)
+export type Note = {
+  id: string;
+} & NoteData;
+
+type RawNote = {
+  id: string;
+} & RawNoteData;
+
+type RawNoteData = {
+  title: string;
+  markdown: string;
+  tagIds: string[];
+};
+
+export type NoteData = {
+  title: string;
+  markdown: string;
+  tags: Tag[];
+};
+
+export type Tag = {
+  id: string;
+  label: string;
+};
+
+const App = () => {
+  const [notes, setNotes] = useLocalStorage<RawNote[]>("NOTES", []);
+  const [tags, setTags] = useLocalStorage<Tag[]>("TAGS", []);
+
+  const onCreateNote = ({ tags, ...data }: NoteData) => {
+    const newNotes = [
+      ...notes,
+      { ...data, id: crypto.randomUUID(), tagIds: tags.map((tag) => tag.id) },
+    ];
+    setNotes(newNotes);
+  };
+
+  const onAddTag = (tag: Tag) => {
+    setTags((tags) => [...tags, tag]);
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <Routes>
+      <Route path="/" element={<h1>Home</h1>} />
+      <Route
+        path="/new"
+        element={
+          <NewNote
+            onSubmit={onCreateNote}
+            availableTags={tags}
+            onAddTag={onAddTag}
+          />
+        }
+      />
+      <Route path="/:id" element={<h1>Show</h1>} />
+      <Route path="/:id/edit" element={<h1>Edit</h1>} />
+      <Route path="*" element={<Navigate to="/" />} />
+    </Routes>
+  );
+};
 
-export default App
+export default App;
