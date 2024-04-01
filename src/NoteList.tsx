@@ -31,7 +31,15 @@ const NoteList = ({ notes, tags }: NoteListProps) => {
     }
   );
 
-  const filteredNotes = simplifiedNotes.filter((note) => {});
+  const filteredNotes = simplifiedNotes.filter((note) => {
+    if (title && !note.title.toLowerCase().includes(title.toLowerCase())) {
+      return false;
+    }
+    if (selectedTags.length > 0) {
+      return selectedTags.every((tag) => note.tags.includes(tag.label));
+    }
+    return true;
+  });
 
   return (
     <div>
@@ -51,7 +59,11 @@ const NoteList = ({ notes, tags }: NoteListProps) => {
           <Col>
             <Form.Group controlId="title">
               <Form.Label>Title</Form.Label>
-              <Form.Control type="text" />
+              <Form.Control
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
             </Form.Group>
           </Col>
           <Col>
@@ -77,16 +89,22 @@ const NoteList = ({ notes, tags }: NoteListProps) => {
           </Col>
         </Row>
         <Row xs={1} sm={2} lg={3} xl={4} className="d-flex flex-wrap h-100 g-3">
-          <Col>
-            <Card className={styles.card}>
-              <Card.Body>
-                <Card.Title>Card Title</Card.Title>
-                <Stack direction="horizontal" gap={1} className="flex-wrap">
-                  <Badge bg="primary">New</Badge>
-                </Stack>
-              </Card.Body>
-            </Card>
-          </Col>
+          {filteredNotes.map((note) => (
+            <Col key={crypto.randomUUID()}>
+              <Card className={styles.card}>
+                <Card.Body>
+                  <Card.Title>{note.title}</Card.Title>
+                  <Stack direction="horizontal" gap={1} className="flex-wrap">
+                    {note.tags.map((tag) => (
+                      <Badge bg="primary" key={tag}>
+                        {tag}
+                      </Badge>
+                    ))}
+                  </Stack>
+                </Card.Body>
+              </Card>
+            </Col>
+          ))}
         </Row>
       </Stack>
     </div>
